@@ -1,32 +1,26 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react';
+import axiosWithAuth from '../helpers/axiosWithAuth';
 
-import Bubbles from "./Bubbles";
-import ColorList from "./ColorList";
-
-import { editColorService, deleteColorService } from '../services/colorServices';
-import fetchColorService from '../services/fetchColorService';
+import Bubbles from './Bubbles';
+import ColorList from './ColorList';
 
 const BubblePage = () => {
-  const [colors, setColors] = useState([]);
-  const [editing, setEditing] = useState(false);
+  const [colorList, setColorList] = useState([])
 
-  const toggleEdit = (value) => {
-    setEditing(value);
-  };
+  useEffect(() => {
+    axiosWithAuth()
+      .get('http://localhost:3000/api/colors')
+      .then((response) => setColorList(response.data))
+      .catch((error) => console.error('rendering issue', error))
+  }, [])
 
-  const saveEdit = (editColor) => {
-  };
-
-  const deleteColor = (colorToDelete) => {
-  };
-
-  return (
-    <div className="container">
-      <ColorList colors={colors} editing={editing} toggleEdit={toggleEdit} saveEdit={saveEdit} deleteColor={deleteColor}/>
-      <Bubbles colors={colors}/>
-    </div>
-  );
-};
+  return(
+    <>
+      <ColorList colors={colorList} updateColors={setColorList} />
+      <Bubbles colors={colorList} />
+    </>
+  )
+}
 
 export default BubblePage;
 

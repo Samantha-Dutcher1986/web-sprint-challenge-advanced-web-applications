@@ -1,22 +1,89 @@
-import React, { useState } from "react";
+import React, { useState } from 'react'
+import axiosWithAuth from '../helpers/axiosWithAuth'
+import EditMenu from './EditMenu'
+const initialColor = {
+    color: '',
+    code: { hex: '' }
+}
 
-import Color from './Color';
-import EditMenu from './EditMenu';
+const ColorList = ({ colors, updateColors }) => {
+    const [editing, setEditing] = useState(false)
+    const [colorToEdit, setColorToEdit] = useState(initialColor)
 
-const ColorList = (props) => {
-  const { colors, editing, toggleEdit, saveEdit, deleteColor } = props;
-  const [ editColor, setEditColor] = useState({ color: "", code: { hex: "" }});
+    const editColor = (color) => {
+        setEditing(true)
+        setColorToEdit(color)
+    }
 
-  return (
-    <div className="colors-wrap">
-      <p>colors</p>
-      <ul>
-        {colors.map(color => <Color key={color.id} setEditColor={setEditColor} color={color} toggleEdit={toggleEdit} deleteColor={deleteColor}/>)}
-      </ul>
-      
-      {editing && <EditMenu editColor={editColor} setEditColor={setEditColor} toggleEdit={toggleEdit} saveEdit={saveEdit}/>}
-    </div>
-  );
-};
+    const saveEdit = (e) => {
+        e.preventDefault()
+        axiosWithAuth()
+            .put(
+                `http://localhost:3000/api/colors/${colorToEdit.id}`,
+                colorToEdit
+            )
+            .then((res) => {
+                setEditing(false)
+                updateColors(
+                    colors.map((color) => {
+                        return color.id === colorToEdit.id ? res.data : color
+                    })
+                )
+            })
+    }
+
+    const deleteColor = (color) => {
+        axiosWithAuth()
+            .delete(`http://localhost:3000/api/colors/${color.id}`)
+            .then((res) => {
+                updateColors(
+                    colors
+                        .filter((colorItem) => {
+                            return colorItem.id !== color.id
+                        })
+                        .catch((err) =>
+                            console.error('Error Deleteing Color', err)
+                        )
+                )
+            })
+    }
+
+    return (
+        <div className="colors-wrap">
+            <p>colors</p>
+            <ul>
+                {colors.map((color) => (
+                    <li key={color.color} onClick={() => editColor(color)}>
+                        <span>
+                            <span
+                                className="delete"
+                                onClick={(e) => {
+                                    e.stopPropagation()
+                                    deleteColor(color)
+                                }}
+                            >
+                                x
+                            </span>{' '}
+                            {color.color}
+                        </span>
+                        <div
+                            className="color-box"
+                            style={{ backgroundColor: color.code.hex }}
+                        />
+                    </li>
+                ))}
+            </ul>
+            {editing && (
+                <EditMenu
+                    colorToEdit={colorToEdit}
+                    saveEdit={saveEdit}
+                    setColorToEdit={setColorToEdit}
+                    setEditing={setEditing}
+                />
+            )}
+        </div>
+    )
+}
 
 export default ColorList;
+

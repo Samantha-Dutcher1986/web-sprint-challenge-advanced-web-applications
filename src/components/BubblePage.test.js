@@ -3,9 +3,11 @@ import { render, screen} from "@testing-library/react";
 import BubblePage from './BubblePage';
 
 test("Renders without errors", ()=> {
-    
+    render(<BubblePage />)
 });
 
-test("Renders appropriate number of colors passed in through mock", async ()=> {
-    //Keep in mind that our service is called on mount for this component.
-});
+test('Fetches data and renders the bubbles on mounting', async() => {
+    const bubbles = await screen.getByLabelText('bubble-wrap')
+    render(<BubblePage />)
+    expect(bubbles).toBeInTheDocument()
+})
